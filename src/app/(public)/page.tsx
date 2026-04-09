@@ -175,7 +175,7 @@ const testimonials = [
   {
     name: "Emily K.",
     role: "Family Traveller",
-    text: "Used ParkPro for our family holiday. Easy booking, great price, and peace of mind knowing our car was secure.",
+    text: "Used Heathrow Safe Parking for our family holiday. Easy booking, great price, and peace of mind knowing our car was secure.",
     stars: 5,
     initials: "EK",
     color: "bg-emerald-500",

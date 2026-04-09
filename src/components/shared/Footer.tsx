@@ -91,7 +91,7 @@ export default function Footer() {
               <div className="flex items-start gap-3 opacity-70 hover:opacity-100 transition">
                 <MapPin className="w-4 h-4 mt-1 shrink-0 text-primary" />
                 <a
-                  href="https://maps.app.goo.gl/8p6775Y581w297t97"
+                  href="https://maps.app.goo.gl/5Kpmej29MWZ5qRbD7"
                   target="_blank"
                   className="leading-snug"
                 >
@@ -106,7 +106,7 @@ export default function Footer() {
 
               <div className="flex items-center gap-3 opacity-70 hover:opacity-100 transition">
                 <Mail className="w-4 h-4 shrink-0 text-primary" />
-                <a href="mailto:info@heathrowsafeparking.uk">info@heathrowsafeparking.uk</a>
+                <a href="mailto:info@heathrowsafeparking.com">info@heathrowsafeparking.com</a>
               </div>
             </div>
           </div>
@@ -217,7 +217,7 @@ export default function Footer() {
     //         <div className="flex items-center gap-3 opacity-70 hover:opacity-100 transition-opacity">
     //           <Mail className="w-4 h-4 shrink-0" />
     //           <p className="text-sm">
-    //             <a href="mailto:info@parkpro.uk">info@parkpro.uk</a>
+    //             <a href="mailto:info@heathrowsafeparking.com">info@heathrowsafeparking.com</a>
     //           </p>
     //         </div>
     //       </div>
@@ -225,7 +225,7 @@ export default function Footer() {
 
     //     <div className="mt-10 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
     //       <p className="text-sm opacity-60">
-    //         © {new Date().getFullYear()} ParkPro Airport Parking. All rights
+    //         © {new Date().getFullYear()} Heathrow Safe Parking. All rights
     //         reserved.
     //       </p>
     //       <div className="flex items-center gap-4 text-sm opacity-60">

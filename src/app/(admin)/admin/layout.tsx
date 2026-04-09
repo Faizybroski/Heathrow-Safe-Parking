@@ -48,7 +48,7 @@ export default function AdminLayout({
     <div className="min-h-screen flex">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 bg-primary/50 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 bg-primary ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0 lg:static lg:w-64 flex-shrink-0`}
       >
@@ -62,8 +62,8 @@ export default function AdminLayout({
               >
                 PP
               </div>
-              <span className="text-lg font-bold text-white">ParkPro</span> */}
-              <Image src="/logo.svg" alt="Logo" width={200} height={50} />
+              <span className="text-lg font-bold text-white">Heathrow Safe Parking</span> */}
+              <Image src="/white_logo.svg" alt="Logo" width={200} height={50} />
               {/* <p className="flex items-center text-lg text-primary uppercase leading-none">
                 <span className="font-bold">Park</span>
                 <span className="font-normal">Pro</span>
@@ -86,8 +86,8 @@ export default function AdminLayout({
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   pathname === href
-                    ? "bg-white/10 text-primary border-primary border-l-5"
-                    : "text-white/60 hover:bg-white/5 hover:text-white"
+                    ? "bg-white/60 text-primary border-white/90 border-l-5"
+                    : "text-white hover:bg-white/50 hover:text-primary"
                 }`}
               >
                 <Icon className="w-5 h-5 shrink-0" />

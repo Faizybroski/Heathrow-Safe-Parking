@@ -206,7 +206,7 @@ export function printBookingInvoice(booking: Booking): boolean {
   <body>
     <div class="receipt">
       <div class="center">
-        <div class="title">ParkPro</div>
+        <div class="title">Heathrow Safe Parking</div>
         <div class="subtitle">Parking Booking Invoice</div>
       </div>
 
@@ -333,7 +333,7 @@ export function printBookingInvoice(booking: Booking): boolean {
       <div class="divider"></div>
 
       <div class="footer">
-        Thank you for choosing ParkPro
+        Thank you for choosing Heathrow Safe Parking
       </div>
     </div>
   </body>

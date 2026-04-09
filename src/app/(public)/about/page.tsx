@@ -3,8 +3,8 @@ import { ShieldCheck, Star, BadgeDollarSign } from "lucide-react";
 import PageHero from "@/components/shared/PageHero";
 
 export const metadata: Metadata = {
-  title: "About Us - ParkPro",
-  description: "Learn about ParkPro airport parking services.",
+  title: "About Us - Heathrow Safe Parking",
+  description: "Learn about Heathrow Safe Parking airport parking services.",
 };
 
 const items = [
@@ -35,7 +35,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
       <PageHero
-        title="About ParkPro"
+        title="About Heathrow Safe Parking"
         subtitle="Your trusted airport parking partner"
       />
       <div className="relative min-h-screen overflow-hidden bg-white">
@@ -83,7 +83,7 @@ export default function AboutPage() {
                 className="leading-relaxed"
                 style={{ color: "var(--muted-foreground)" }}
               >
-                At ParkPro, we believe airport parking should be simple,
+                At Heathrow Safe Parking, we believe airport parking should be simple,
                 affordable, and stress-free. We provide secure, monitored
                 parking spaces with a seamless online booking experience — no
                 accounts, no hassle. Just book, park, and fly.
