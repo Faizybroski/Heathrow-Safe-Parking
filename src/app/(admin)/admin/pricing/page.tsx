@@ -666,11 +666,7 @@ export default function PricingPage() {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-base font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{
-          background:
-            "linear-gradient(135deg, var(--primary), var(--primary-light))",
-        }}
+        className="bg-primary w-full flex items-center justify-center gap-2 rounded-xl py-3.5 text-base font-bold text-white transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {saving ? (
           <>
