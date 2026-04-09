@@ -151,12 +151,12 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary-light);
+  background: var(--primary);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  opacity: 0.1;
 }
 
 .no-scrollbar::-webkit-scrollbar {
