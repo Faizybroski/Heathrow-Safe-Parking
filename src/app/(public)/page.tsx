@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { DateTimePicker } from "@/components/ui/DatePicker";
+import AirportPopover from "@/components/ui/AirportPicker"
 import { api } from "@/lib/api";
 import type React from "react";
 
@@ -68,57 +69,6 @@ const steps = [
     num: "04",
     title: "Park & Fly",
     desc: "Drop off your car and head to the terminal",
-  },
-];
-
-const parkingOptions = [
-  {
-    title: "Short Stay",
-    desc: "Perfect for quick drop-offs",
-    gradient: "from-sky-500 to-blue-700",
-    icon: Clock,
-  },
-  {
-    title: "Long Stay",
-    desc: "Best value for longer trips",
-    gradient: "from-emerald-500 to-teal-700",
-    icon: CalendarDays,
-  },
-  {
-    title: "Meet & Greet",
-    desc: "Door-to-terminal valet service",
-    gradient: "from-violet-500 to-purple-700",
-    icon: Users,
-  },
-  {
-    title: "Business Class",
-    desc: "Premium parking experience",
-    gradient: "from-orange-400 to-primary",
-    icon: Building2,
-  },
-];
-
-const services = [
-  {
-    icon: Car,
-    title: "Meet & Greet",
-    desc: "Our team meets you at the terminal, takes your keys, and parks your car while you check in stress-free.",
-    color: "text-primary",
-    bg: "bg-orange-100",
-  },
-  // {
-  //   icon: Plane,
-  //   title: "Park & Ride",
-  //   desc: "Drive to our secure facility, jump on our complimentary shuttle, and arrive at the terminal in minutes.",
-  //   color: "text-blue-600",
-  //   bg: "bg-blue-50",
-  // },
-  {
-    icon: Building2,
-    title: "On-Airport Parking",
-    desc: "Stay close to the action with on-site parking — walk directly to departures without any wait.",
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
   },
 ];
 
@@ -312,6 +262,10 @@ export default function HomePage() {
 
                 <CardContent className="p-0">
                   <form onSubmit={handleQuickBook} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label>Select Airport</Label>
+                      <AirportPopover/>
+                    </div>
                     <div className="space-y-1.5">
                       <Label>Drop-off Date & Time</Label>
 
