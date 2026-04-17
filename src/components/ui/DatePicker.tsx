@@ -44,6 +44,7 @@ const generateTimeSlots = () => {
 export function DateTimePicker({ value, onChange, homepage = false }: Props) {
   const parsed = value ? new Date(value) : undefined;
 
+  const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(parsed);
   // const [time, setTime] = useState(
   //   parsed
@@ -78,7 +79,7 @@ export function DateTimePicker({ value, onChange, homepage = false }: Props) {
   const timeSlots = generateTimeSlots();
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       {/* SINGLE TRIGGER */}
       <PopoverTrigger asChild className="active:bg-primary">
         <Button
@@ -130,6 +131,7 @@ export function DateTimePicker({ value, onChange, homepage = false }: Props) {
                   onClick={() => {
                     setTime(slot);
                     update(undefined, slot);
+                    setOpen(false);
                   }}
                   className={`text-sm px-3 py-2 rounded-md text-left hover:bg-muted ${
                     time === slot
