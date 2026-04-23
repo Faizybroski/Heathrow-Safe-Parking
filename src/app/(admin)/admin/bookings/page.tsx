@@ -2,11 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api";
-import {
-  Booking,
-  BookingSelectionPayload,
-  BookingStatus,
-} from "@/types";
+import { Booking, BookingSelectionPayload, BookingStatus } from "@/types";
 import {
   formatDateTime,
   formatDayCount,
@@ -18,6 +14,7 @@ import {
   getStatusLabel,
 } from "@/lib/utils";
 import { printBookingInvoice } from "@/lib/bookingInvoice";
+import { exportBookingsPdf } from "@/lib/bookingsPdfExport";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -31,6 +28,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  FileText,
   Loader2,
   Printer,
   ToggleLeft,
@@ -103,6 +101,11 @@ export default function BookingsPage() {
     "selection",
   );
   const [exporting, setExporting] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [appliedDateFrom, setAppliedDateFrom] = useState("");
+  const [appliedDateTo, setAppliedDateTo] = useState("");
   const [deleteDialog, setDeleteDialog] = useState<DeleteDialogState>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [deleting, setDeleting] = useState(false);
@@ -128,7 +131,13 @@ export default function BookingsPage() {
   const fetchBookings = useCallback(
     async (
       showLoader = true,
-      overrides?: { page?: number; search?: string; limit?: number },
+      overrides?: {
+        page?: number;
+        search?: string;
+        limit?: number;
+        dateFrom?: string;
+        dateTo?: string;
+      },
     ) => {
       if (showLoader) {
         setLoading(true);
@@ -138,11 +147,19 @@ export default function BookingsPage() {
         const effectivePage = overrides?.page ?? page;
         const effectiveSearch = overrides?.search ?? appliedSearch;
         const effectiveLimit = overrides?.limit ?? pageSize;
+        const effectiveDateFrom =
+          overrides && "dateFrom" in overrides
+            ? overrides.dateFrom
+            : appliedDateFrom;
+        const effectiveDateTo =
+          overrides && "dateTo" in overrides ? overrides.dateTo : appliedDateTo;
         const res = await api.getBookings({
           status: activeTab || undefined,
           page: effectivePage,
           limit: effectiveLimit,
           search: effectiveSearch || undefined,
+          dateFrom: effectiveDateFrom || undefined,
+          dateTo: effectiveDateTo || undefined,
         });
 
         setBookings(res.data.bookings);
@@ -260,22 +277,41 @@ export default function BookingsPage() {
     e.preventDefault();
 
     const nextSearch = search.trim();
-    const nextSignature = `${activeTab}|${nextSearch}`;
-    const currentSignature = `${activeTab}|${appliedSearch}`;
+    const nextSignature = `${activeTab}|${nextSearch}|${dateFrom}|${dateTo}`;
+    const currentSignature = `${activeTab}|${appliedSearch}|${appliedDateFrom}|${appliedDateTo}`;
 
     if (nextSignature !== currentSignature) {
       clearSelection();
     }
 
     const shouldRefetchImmediately =
-      page === 1 && nextSearch === appliedSearch;
+      page === 1 &&
+      nextSearch === appliedSearch &&
+      dateFrom === appliedDateFrom &&
+      dateTo === appliedDateTo;
 
     setAppliedSearch(nextSearch);
+    setAppliedDateFrom(dateFrom);
+    setAppliedDateTo(dateTo);
     setPage(1);
 
     if (shouldRefetchImmediately) {
-      void fetchBookings(true, { page: 1, search: nextSearch });
+      void fetchBookings(true, {
+        page: 1,
+        search: nextSearch,
+        dateFrom,
+        dateTo,
+      });
     }
+  };
+
+  const clearDates = () => {
+    clearSelection();
+    setDateFrom("");
+    setDateTo("");
+    setAppliedDateFrom("");
+    setAppliedDateTo("");
+    setPage(1);
   };
 
   const handleStatusChange = async (
@@ -305,7 +341,9 @@ export default function BookingsPage() {
       showFeedback({
         type: "error",
         message:
-          err instanceof Error ? err.message : "Failed to update booking status.",
+          err instanceof Error
+            ? err.message
+            : "Failed to update booking status.",
       });
     } finally {
       setUpdatingBookingId(null);
@@ -380,12 +418,14 @@ export default function BookingsPage() {
 
   const buildCurrentSelectionPayload = (): BookingSelectionPayload =>
     allMatchingSelected
-        ? {
-            selectionMode: "allMatching",
-            status: activeTab ? (activeTab as BookingStatus) : undefined,
-            search: appliedSearch || undefined,
-            excludeIds: excludedIds,
-          }
+      ? {
+          selectionMode: "allMatching",
+          status: activeTab ? (activeTab as BookingStatus) : undefined,
+          search: appliedSearch || undefined,
+          excludeIds: excludedIds,
+          dateFrom: appliedDateFrom || undefined,
+          dateTo: appliedDateTo || undefined,
+        }
       : {
           selectionMode: "selected",
           ids: selectedIds,
@@ -396,6 +436,8 @@ export default function BookingsPage() {
     status: activeTab ? (activeTab as BookingStatus) : undefined,
     search: appliedSearch || undefined,
     excludeIds: [],
+    dateFrom: appliedDateFrom || undefined,
+    dateTo: appliedDateTo || undefined,
   });
 
   const downloadBlob = (blob: Blob, fileName: string) => {
@@ -437,6 +479,44 @@ export default function BookingsPage() {
       });
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    setExportingPdf(true);
+    try {
+      const res = await api.getBookings({
+        status: activeTab || undefined,
+        page: 1,
+        limit: 10000,
+        search: appliedSearch || undefined,
+        dateFrom: appliedDateFrom || undefined,
+        dateTo: appliedDateTo || undefined,
+      });
+      const opened = exportBookingsPdf(res.data.bookings, {
+        exportDate: formatDateTime(new Date()),
+        statusFilter: activeTab || undefined,
+        searchQuery: appliedSearch || undefined,
+        dateFrom: appliedDateFrom || undefined,
+        dateTo: appliedDateTo || undefined,
+        totalCount: res.data.total,
+      });
+      if (!opened) {
+        showFeedback({
+          type: "error",
+          message:
+            "Unable to open PDF export window. Check your popup blocker.",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      showFeedback({
+        type: "error",
+        message:
+          err instanceof Error ? err.message : "Failed to generate PDF report.",
+      });
+    } finally {
+      setExportingPdf(false);
     }
   };
 
@@ -523,7 +603,9 @@ export default function BookingsPage() {
           setSelectedBooking(null);
         }
       } else {
-        const res = await api.bulkDeleteBookings(buildCurrentSelectionPayload());
+        const res = await api.bulkDeleteBookings(
+          buildCurrentSelectionPayload(),
+        );
         deletedCount = res.data.deletedCount;
         deletedIds = res.data.deletedIds;
         clearSelection();
@@ -576,10 +658,7 @@ export default function BookingsPage() {
           >
             Bookings
           </h1>
-          <p
-            className="text-sm"
-            style={{ color: "var(--muted-foreground)" }}
-          >
+          <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
             {total} total bookings
           </p>
         </div>
@@ -620,7 +699,9 @@ export default function BookingsPage() {
 
           <button
             onClick={() => void handleExport()}
-            disabled={exporting || (exportMode === "selection" && selectedCount === 0)}
+            disabled={
+              exporting || (exportMode === "selection" && selectedCount === 0)
+            }
             className="flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all hover:shadow-md disabled:opacity-50"
             style={{
               borderColor: "var(--border)",
@@ -633,6 +714,22 @@ export default function BookingsPage() {
               <Download className="h-4 w-4" />
             )}
             Export Excel
+          </button>
+          <button
+            onClick={() => void handleExportPdf()}
+            disabled={exportingPdf}
+            className="flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-all hover:shadow-md disabled:opacity-50"
+            style={{
+              borderColor: "var(--border)",
+              color: "var(--foreground)",
+            }}
+          >
+            {exportingPdf ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FileText className="h-4 w-4" />
+            )}
+            Export PDF
           </button>
 
           <button
@@ -726,26 +823,64 @@ export default function BookingsPage() {
       </div>
 
       <div className="flex flex-col gap-3 rounded-2xl border p-4 md:flex-row md:items-center md:justify-between">
-        <form onSubmit={handleSearch} className="flex flex-1 gap-2">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, email, tracking #, or car reg..."
-            className="flex-1 rounded-xl border px-4 py-2.5 text-sm"
-            style={{
-              background: "var(--card)",
-              borderColor: "var(--border)",
-              color: "var(--foreground)",
-            }}
-          />
-          <button
-            type="submit"
-            className="rounded-xl px-5 py-2.5 text-sm font-medium text-white"
-            style={{ background: "var(--primary)" }}
-          >
-            Search
-          </button>
+        <form onSubmit={handleSearch} className="flex flex-1 flex-col gap-2">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, email, tracking #, or car reg..."
+              className="flex-1 rounded-xl border px-4 py-2.5 text-sm"
+              style={{
+                background: "var(--card)",
+                borderColor: "var(--border)",
+                color: "var(--foreground)",
+              }}
+            />
+            <button
+              type="submit"
+              className="rounded-xl px-5 py-2.5 text-sm font-medium text-white"
+              style={{ background: "var(--primary)" }}
+            >
+              Search
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span style={{ color: "var(--muted-foreground)" }}>From</span>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="h-9 rounded-lg border px-3 text-sm"
+              style={{
+                background: "var(--card)",
+                borderColor: "var(--border)",
+                color: "var(--foreground)",
+              }}
+            />
+            <span style={{ color: "var(--muted-foreground)" }}>To</span>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="h-9 rounded-lg border px-3 text-sm"
+              style={{
+                background: "var(--card)",
+                borderColor: "var(--border)",
+                color: "var(--foreground)",
+              }}
+            />
+            {(appliedDateFrom || appliedDateTo) && (
+              <button
+                type="button"
+                onClick={clearDates}
+                className="text-xs font-medium"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                Clear dates ×
+              </button>
+            )}
+          </div>
         </form>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -795,7 +930,10 @@ export default function BookingsPage() {
         style={{ background: "var(--card)", borderColor: "var(--border)" }}
       >
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
+          <p
+            className="text-sm font-medium"
+            style={{ color: "var(--foreground)" }}
+          >
             {selectionSummary}
           </p>
           <div className="flex flex-wrap items-center gap-3 text-xs">
@@ -930,16 +1068,18 @@ export default function BookingsPage() {
                     <p className="text-lg font-bold">
                       {formatPrice(currentTotalPrice)}
                     </p>
-                    {booking.lateChargeMode === "pending" && uptimePrice > 0 && (
-                      <p className="text-xs text-amber-600">
-                        Extra payment +{formatPrice(uptimePrice)}
-                      </p>
-                    )}
-                    {booking.lateChargeMode === "finalized" && uptimePrice > 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        Late exit already added
-                      </p>
-                    )}
+                    {booking.lateChargeMode === "pending" &&
+                      uptimePrice > 0 && (
+                        <p className="text-xs text-amber-600">
+                          Extra payment +{formatPrice(uptimePrice)}
+                        </p>
+                      )}
+                    {booking.lateChargeMode === "finalized" &&
+                      uptimePrice > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Late exit already added
+                        </p>
+                      )}
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -956,7 +1096,10 @@ export default function BookingsPage() {
                       </Badge>
                     </div>
 
-                    <div className="w-full" onClick={(e) => e.stopPropagation()}>
+                    <div
+                      className="w-full"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Select
                         value={booking.status}
                         onValueChange={(value) =>
@@ -1319,7 +1462,9 @@ export default function BookingsPage() {
                       value === "completed" ? completionExitTime : undefined,
                     )
                   }
-                  disabled={selectedBookingUpdating || selectedBookingStatusLocked}
+                  disabled={
+                    selectedBookingUpdating || selectedBookingStatusLocked
+                  }
                 >
                   <SelectTrigger className="h-11 w-full rounded-xl bg-background">
                     <SelectValue placeholder="Select booking status" />

@@ -129,12 +129,16 @@ class ApiClient {
     page?: number;
     limit?: number;
     search?: string;
+    dateFrom?: string;
+    dateTo?: string;
   }): Promise<ApiResponse<PaginatedResponse<Booking>>> {
     const searchParams = new URLSearchParams();
     if (params.status) searchParams.set("status", params.status);
     if (params.page) searchParams.set("page", String(params.page));
     if (params.limit) searchParams.set("limit", String(params.limit));
     if (params.search) searchParams.set("search", params.search);
+    if (params.dateFrom) searchParams.set("dateFrom", params.dateFrom);
+    if (params.dateTo) searchParams.set("dateTo", params.dateTo);
     return this.request(`/admin/bookings?${searchParams.toString()}`);
   }
 
@@ -162,9 +166,9 @@ class ApiClient {
     });
   }
 
-  async bulkDeleteBookings(data: BookingSelectionPayload): Promise<
-    ApiResponse<{ deletedCount: number; deletedIds: string[] }>
-  > {
+  async bulkDeleteBookings(
+    data: BookingSelectionPayload,
+  ): Promise<ApiResponse<{ deletedCount: number; deletedIds: string[] }>> {
     return this.request("/admin/bookings/bulk-delete", {
       method: "POST",
       body: JSON.stringify(data),
@@ -184,7 +188,9 @@ class ApiClient {
     });
   }
 
-  async getTerminalMessages(): Promise<ApiResponse<{ messages: Record<string, string> }>> {
+  async getTerminalMessages(): Promise<
+    ApiResponse<{ messages: Record<string, string> }>
+  > {
     return this.request("/admin/terminal-messages");
   }
 
@@ -212,7 +218,9 @@ class ApiClient {
     });
   }
 
-  async getPricingBreakdown(days: number): Promise<ApiResponse<PricingBreakdown>> {
+  async getPricingBreakdown(
+    days: number,
+  ): Promise<ApiResponse<PricingBreakdown>> {
     return this.request(`/bookings/pricing?days=${days}`);
   }
 
