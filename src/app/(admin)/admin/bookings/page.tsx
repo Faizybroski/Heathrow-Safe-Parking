@@ -30,6 +30,7 @@ import {
   Download,
   FileText,
   Loader2,
+  Layers,
   Printer,
   ToggleLeft,
   ToggleRight,
@@ -1094,6 +1095,12 @@ export default function BookingsPage() {
                       >
                         {paymentStatusLabel}
                       </Badge>
+                      {booking.bookedVia && (
+                        <Badge className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] bg-violet-100 text-violet-700 border-violet-200">
+                          <Layers className="h-3 w-3" />
+                          {booking.bookedVia}
+                        </Badge>
+                      )}
                     </div>
 
                     <div
