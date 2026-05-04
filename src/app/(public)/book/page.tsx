@@ -410,7 +410,7 @@ function BookingFormContent() {
 
                   {/* Price preview */}
                   {pricePreview && (
-                    <div className="mt-4 p-4 rounded-xl border border-primary-light/10 bg-input sm:col-span-2">
+                    <div className="mt-4 p-4 rounded-xl border border-primary/10 bg-primary/10 sm:col-span-2">
                       <div className="flex justify-between items-center">
                         <div>
                           <p className="text-sm text-primary">

@@ -1,8 +1,8 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Clock } from "lucide-react";
-import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -18,17 +18,56 @@ type Props = {
   homepage?: boolean; // if true, use white text for better contrast on hero background
 };
 
-// const generateTimeSlots = () => {
-//   const slots: string[] = [];
-//   for (let hour = 0; hour < 24; hour++) {
-//     for (let min = 0; min < 60; min += 15) {
-//       const h = hour.toString().padStart(2, "0");
-//       const m = min.toString().padStart(2, "0");
-//       slots.push(`${h}:${m}`);
-//     }
-//   }
-//   return slots;
-// };
+const HOURS = Array.from({ length: 24 }, (_, i) =>
+  i.toString().padStart(2, "0"),
+);
+const MINUTES = Array.from({ length: 60 }, (_, i) =>
+  i.toString().padStart(2, "0"),
+);
+
+function TimeColumn({
+  items,
+  selected,
+  onSelect,
+}: {
+  items: string[];
+  selected: string;
+  onSelect: (v: string) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const idx = items.indexOf(selected);
+    if (idx !== -1 && containerRef.current) {
+      const item = containerRef.current.children[idx] as HTMLElement;
+      if (item) {
+        item.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+    }
+  }, [selected, items]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex flex-col overflow-y-auto h-56 w-14 scrollbar-thin"
+    >
+      {items.map((v) => (
+        <button
+          key={v}
+          type="button"
+          onClick={() => onSelect(v)}
+          className={`text-sm py-1.5 rounded-md text-center shrink-0 hover:bg-muted ${
+            selected === v
+              ? "bg-primary text-white hover:bg-primary font-medium"
+              : ""
+          }`}
+        >
+          {v}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const generateTimeSlots = () => {
   const slots: string[] = [];
@@ -46,26 +85,23 @@ export function DateTimePicker({ value, onChange, homepage = false }: Props) {
 
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(parsed);
-  // const [time, setTime] = useState(
-  //   parsed
-  //     ? `${parsed.getHours().toString().padStart(2, "0")}:${parsed
-  //         .getMinutes()
-  //         .toString()
-  //         .padStart(2, "0")}`
-  //     : "",
-  // );
+
   const [time, setTime] = useState(
     parsed ? `${parsed.getHours().toString().padStart(2, "0")}:00` : "",
+  );
+
+  const [hour, setHour] = useState(
+    parsed ? parsed.getHours().toString().padStart(2, "0") : "00",
+  );
+  const [minute, setMinute] = useState(
+    parsed ? parsed.getMinutes().toString().padStart(2, "0") : "00",
   );
 
   const update = (d?: Date, t?: string) => {
     if (!d && !date) return;
 
     const finalDate = new Date(d || date!);
-    // const [h, m] = (t || time || "00:00").split(":");
 
-    // finalDate.setHours(Number(h));
-    // finalDate.setMinutes(Number(m));
     const [h] = (t || time || "00:00").split(":");
 
     finalDate.setHours(Number(h));
@@ -76,7 +112,35 @@ export function DateTimePicker({ value, onChange, homepage = false }: Props) {
     onChange(finalDate.toISOString());
   };
 
+  const commit = (d: Date | undefined, h: string, m: string) => {
+    if (!d) return;
+    const finalDate = new Date(d);
+    finalDate.setHours(Number(h));
+    finalDate.setMinutes(Number(m));
+    finalDate.setSeconds(0);
+    finalDate.setMilliseconds(0);
+    onChange(finalDate.toISOString());
+  };
+
   const timeSlots = generateTimeSlots();
+
+  const handleHourSelect = (h: string) => {
+    setHour(h);
+    commit(date, h, minute);
+  };
+
+  const handleMinuteSelect = (m: string) => {
+    setMinute(m);
+    commit(date, hour, m);
+    if (date) setOpen(false);
+  };
+
+  const handleDateSelect = (d: Date | undefined) => {
+    setDate(d);
+    commit(d, hour, minute);
+  };
+
+  const displayTime = `${hour}:${minute}`;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -90,19 +154,32 @@ export function DateTimePicker({ value, onChange, homepage = false }: Props) {
 
           {date ? (
             <>
-              <span className={` ${homepage ? "text-white" : "text-primary"}`}>{format(date, "PPP")}</span>
-              <span className={`mx-2   ${homepage ? "text-white" : "text-primary"}`}>•</span>
+              <span className={` ${homepage ? "text-white" : "text-primary"}`}>
+                {format(date, "PPP")}
+              </span>
+              <span
+                className={`mx-2   ${homepage ? "text-white" : "text-primary"}`}
+              >
+                •
+              </span>
               {/* <Clock className={`mr-1 h-4 w-4 text-white`} /> */}
-              <span className={` ${homepage ? "text-white" : "text-primary"}`}>{time || "00:00"}</span>
+              <span className={` ${homepage ? "text-white" : "text-primary"}`}>
+                {displayTime}
+              </span>
             </>
           ) : (
-            <span className={`${homepage ? "text-white/50" : "text-ring"}`}>Pick date & time</span>
+            <span className={`${homepage ? "text-white/50" : "text-ring"}`}>
+              Pick date & time
+            </span>
           )}
         </Button>
       </PopoverTrigger>
 
       {/* COMBINED PANEL */}
-      <PopoverContent align="start" className="p-0 rounded-xl shadow-lg w-auto bg-white/20 backdrop-blur-sm">
+      <PopoverContent
+        align="start"
+        className="p-0 rounded-xl shadow-lg w-auto bg-white/20 backdrop-blur-sm"
+      >
         <div className="flex">
           {/* Calendar */}
           <div className="border-r p-2">
@@ -119,10 +196,8 @@ export function DateTimePicker({ value, onChange, homepage = false }: Props) {
           </div>
 
           {/* Time list */}
-          <div className="p-3 max-h-72 overflow-y-auto no-scrollbar">
-            <p className="text-sm text-primary font-medium mb-2">
-              Select time
-            </p>
+          {/* <div className="p-3 max-h-72 overflow-y-auto no-scrollbar">
+            <p className="text-sm text-primary font-medium mb-2">Select time</p>
 
             <div className="flex flex-col gap-1">
               {timeSlots.map((slot) => (
@@ -143,6 +218,35 @@ export function DateTimePicker({ value, onChange, homepage = false }: Props) {
                 </button>
               ))}
             </div>
+          </div> */}
+          <div className="p-3 flex flex-col gap-2">
+            <p className="text-sm text-primary-light font-medium">
+              Select time
+            </p>
+            <div className="flex gap-1">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs text-muted-foreground">HH</span>
+                <TimeColumn
+                  items={HOURS}
+                  selected={hour}
+                  onSelect={handleHourSelect}
+                />
+              </div>
+              <div className="flex items-center justify-center pt-5 text-primary font-semibold">
+                :
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs text-muted-foreground">MM</span>
+                <TimeColumn
+                  items={MINUTES}
+                  selected={minute}
+                  onSelect={handleMinuteSelect}
+                />
+              </div>
+            </div>
+            <p className="text-center text-sm font-medium text-primary">
+              {displayTime}
+            </p>
           </div>
         </div>
       </PopoverContent>
