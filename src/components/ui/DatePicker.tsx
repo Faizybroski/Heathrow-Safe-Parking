@@ -242,7 +242,7 @@ export function DateTimePicker({ value, onChange, homepage = false }: Props) {
                   selected={minute}
                   onSelect={handleMinuteSelect}
                 />
-              </div>
+              </div>  
             </div>
             <p className="text-center text-sm font-medium text-primary">
               {displayTime}
