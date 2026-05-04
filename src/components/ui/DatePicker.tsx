@@ -186,10 +186,7 @@ export function DateTimePicker({ value, onChange, homepage = false }: Props) {
             <Calendar
               mode="single"
               selected={date}
-              onSelect={(d) => {
-                setDate(d);
-                update(d, undefined);
-              }}
+              onSelect={handleDateSelect}
               disabled={{ before: new Date() }}
               initialFocus
             />
