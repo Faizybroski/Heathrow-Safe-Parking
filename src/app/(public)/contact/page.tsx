@@ -17,7 +17,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, AlertCircle } from "lucide-react";
+import PageHero from "@/components/shared/PageHero";
+import {
+  Mail,
+  Phone,
+  MessageCircle,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { api } from "@/lib/api";
 
 const formSchema = z.object({
@@ -27,8 +35,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-import { Mail, Phone, MapPin, Clock } from "lucide-react";
-import PageHero from "@/components/shared/PageHero";
 
 const items = [
   {
@@ -39,19 +45,20 @@ const items = [
     bg: "bg-blue-100",
   },
   {
+    icon: MessageCircle,
+    title: "WhatsApp",
+    value: "07927970960",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-100 dark:bg-emerald-900/30",
+  },
+  {
     icon: Phone,
     title: "Phone",
     value: "07927970960",
     color: "text-green-600",
     bg: "bg-green-100",
   },
-  {
-    icon: MapPin,
-    title: "Address",
-    value: "103 Pennine Way UB3 5LJ",
-    color: "text-red-600",
-    bg: "bg-red-100",
-  },
+
   {
     icon: Clock,
     title: "Hours",
