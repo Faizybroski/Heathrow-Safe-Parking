@@ -1313,6 +1313,10 @@ export default function BookingsPage() {
               <Row label="Email" value={selectedBooking.userEmail} />
               <Row label="Phone" value={selectedBooking.userPhone} />
               <Row
+                label="Booked At"
+                value={formatDateTime(selectedBooking.createdAt)}
+              />
+              <Row
                 label="Vehicle"
                 value={`${selectedBooking.carMake} ${selectedBooking.carModel} (${selectedBooking.carColor})`}
               />
